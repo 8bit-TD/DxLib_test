@@ -111,3 +111,5 @@ struct PEFFECT_EXPAND {
 #define BALL_INITX 50
 #define BALL_INITY 30
 
+#define BOSS_COLLISION 60
+

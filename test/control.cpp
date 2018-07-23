@@ -128,6 +128,17 @@ void CONTROL::GetPlayerPosition(double *x, double *y) {
 	*y = tempy;
 }
 
+bool CONTROL::GetBossFlag() {
+	return boss->GetFlag();
+}
+
+void CONTROL::GetBossPosition(double *x, double *y) {
+	double tempx, tempy;
+	boss->GetPosition(&tempx, &tempy);
+	*x = tempx;
+	*y = tempy;
+}
+
 bool CONTROL::GetEnemyPosition(int index, double *x, double *y) {
 	double tempx, tempy;
 	if (enemy[index] == NULL || enemy[index]->GetDeadFlag())
@@ -275,7 +286,7 @@ void CONTROL::CollisionAll() {
 							break;
 						case 1:
 							player->SetPower(1);
-							score->SetScore(POWER_SCORE, 1);
+							score->SetScore(POWER_SCORE, player->GetPower());
 							//パワーを増やす
 							break;
 					}
@@ -292,7 +303,147 @@ void CONTROL::CollisionAll() {
 }
 
 void CONTROL::BossCollisionAll() {
+	double px, py, bx, by, ix, iy;
+	int bhp;
+	//出すアイテム数
+	int itemnum = 0;
+	//グレイズとヒットしたかのフラグ
+	bool hflag = false, gflag = false;
+	//ボスの弾の種類
+	int type;
 
+	//プレイヤーのショットとボスの当たり判定
+	for (int i = 0; i < PSHOT_NUM; ++i) {
+		if (player->GetShotPosition(i, &px, &py)) {
+			boss->GetPosition(&bx, &by);
+			//当たり判定
+			if (CircleCollision(PSHOT_COLLISION, BOSS_COLLISION, px, bx, py, by)) {
+				//当たっていればhpを減らす
+				bhp = boss->HpSet(1);
+				//当たった弾のフラグを戻す
+				player->SetShotFlag(i, false);
+				//得点を加える
+				score->SetScore(CURRENT_SCORE, 10);
+				//もしボスのHPが0以下なら
+				if (bhp <= 0) {
+					//フラグを戻す
+					boss->SetFlag(false);
+					//消滅エフェクトを出す
+					EnemyDeadEffect(bx, by);
+					//消滅音を鳴らす
+					edead_flag = true;
+					//さらに得点を加える
+					score->SetScore(CURRENT_SCORE, 10000);
+					//アイテムを出す
+					for (int z = 0; z < ITEM_NUM; ++z) {
+						if (!item[z]->GetFlag()) {
+							//アイテムの初期座標をばらけさせる
+							ix = (rand() % 100 - 51) + bx;
+							iy = (rand() % 100 - 51) + by;
+							item[z]->SetFlag(ix, iy, rand() % 2);
+							++itemnum;
+							//10個出たらループを抜ける
+							if (itemnum == 10) {
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//ボスのショットとプレイヤーの当たり判定
+	if (!player->GetDamageFlag()) {
+		player->GetPosition(&px, &py);
+		for (int i = 0; i < BOSS_SHOTNUM; ++i) {
+			if (boss->GetShotPosition(i, &bx, &by, &type)) {
+				switch (type) {
+					case 0:
+						if (CircleCollision(GRAZE_COLLISION, ESHOT0_COLLISION, px, bx, py, by)) {
+							gflag = true;
+						}
+						if (CircleCollision(PLAYER_COLLISION, ESHOT0_COLLISION, px, bx, py, by)) {
+							hflag = true;
+						}
+						break;
+					case 1:
+						if (CircleCollision(GRAZE_COLLISION, ESHOT1_COLLISION, px, bx, py, by)) {
+							gflag = true;
+						}
+						if (CircleCollision(PLAYER_COLLISION, ESHOT1_COLLISION, px, bx, py, by)) {
+							hflag = true;
+						}
+						break;
+					case 2:
+						if (CircleCollision(GRAZE_COLLISION, ESHOT2_COLLISION, px, bx, py, by)) {
+							gflag = true;
+						}
+						if (CircleCollision(PLAYER_COLLISION, ESHOT2_COLLISION, px, bx, py, by)) {
+							hflag = true;
+						}
+						break;
+				}
+				//グレイズフラグが立ってたら
+				if (gflag) {
+					//該当の弾がすでにグレイズしているかチェック
+					if (!boss->GetGrazeFlag(i)) {
+						boss->SetGrazeFlag(i);
+						//まだ使われてないグレイズエフェクトを探す
+						for (int z = 0; z < GRAZE_NUM; ++z) {
+							if (!graze[z]->GetFlag()) {
+								graze[z]->SetFlag(px, py);
+								break;
+							}
+						}
+						//グレイズの得点を加える
+						score->SetScore(GRAZE_SCORE, 1);
+						score->SetScore(CURRENT_SCORE, 20);
+						//グレイズ音セット
+						graze_flag = true;
+					}
+					//次の弾のグレイズをチェックするためのフラグを戻す。
+					gflag = false;
+				}
+				if (hflag) {
+					//操作キャラのdamageflagを立てる
+					player->SetDamageFlag();
+					//弾を消す
+					boss->SetShotFlag(i, false);
+					//プレイヤー消滅音フラグを立てる
+					pdead_flag = true;
+					//一時フラグを戻す
+					hflag = false;
+					//１つでも当たったらプレイヤーは消滅するので、
+					//他の弾をチェックする必要ないのでループを抜ける。
+					break;
+				}
+			}
+		}
+	}
+	//アイテムとプレイヤーの当たり判定
+	for (int i = 0; i < ITEM_NUM; ++i) {
+		if (item[i]->GetFlag()) {
+			item[i]->GetPosition(&ix, &iy);
+			if (CircleCollision(PLAYER_COLLISION, ITEM_COLLISION, px, ix, py, iy)) {
+				switch (item[i]->GetType()) {
+					case 0:
+						score->SetScore(CURRENT_SCORE, 300);
+						break;
+					case 1:
+						player->SetPower(1);
+						score->SetScore(POWER_SCORE, player->GetPower());
+						//パワーを増やす
+						break;
+				}
+				item[i]->Delete();
+				//アイテム取得音をセット
+				item_flag = true;
+			}
+		}
+	}
+	//ライフは毎回取得
+	score->SetScore(LIFE_SCORE, player->GetLife());
 }
 
 void CONTROL::All()
@@ -335,6 +486,7 @@ void CONTROL::All()
 
 	//当たり判定
 	CollisionAll();
+	BossCollisionAll();
 
 	//グレイズ描画
 	for (int i = 0; i < GRAZE_NUM; ++i) {

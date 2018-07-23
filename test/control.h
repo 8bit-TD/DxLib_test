@@ -58,10 +58,13 @@ private:
 	void BossCollisionAll();
 	bool CircleCollision(double c1, double c2, double cx1, double cx2, double cy1, double cy2);
 	void EnemyDeadEffect(double x, double y);
+
 public:
 	void All();
 	void GetPlayerPosition(double *x, double *y);
 	bool GetEnemyPosition(int index, double *x, double *y);
+	bool GetBossFlag();
+	void GetBossPosition(double *x, double *y);
 	
 	static CONTROL& GetInstance() {
 		static CONTROL control;

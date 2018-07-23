@@ -35,6 +35,7 @@ class BOSS {
 	int temp_scount;
 
 	int count;
+	int hp;
 
 private:
 	void Move();
@@ -53,9 +54,12 @@ public:
 	void SetDamageFlag();
 	void SetFlag(bool f);
 	bool GetFlag();
+	void GetPosition(double *x, double *y);
 	bool GetShotSound();
+	void SetShotFlag(int index, bool flag);
 	bool GetShotPosition(int index, double *x, double *y, int *type);
 	bool GetGrazeFlag(int index);
 	void SetGrazeFlag(int index);
+	int HpSet(int i);
 	void All();
 };

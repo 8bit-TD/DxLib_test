@@ -8,6 +8,9 @@ BOSS::BOSS() {
 	y = -100;
 	prev_x = 200;
 	prev_y = -100;
+	
+	hp = 100;
+
 	//‰æ‘œ“Ç‚Ýž‚Ý
 	gh_face[0] = LoadGraph("boss.png");
 	gh_face[1] = LoadGraph("boss_damage.png");
@@ -135,15 +138,15 @@ void BOSS::MoveInit(double bx, double by, int state) {
 }
 
 void BOSS::SetDamageFlag() {
-
+	this->damageflag = true;
 }
 
 void BOSS::SetFlag(bool f) {
-
+	this->flag = f;
 }
 
 bool BOSS::GetFlag() {
-	return true;
+	return this->flag;
 }
 
 int BOSS::ShotSerch() {
@@ -194,6 +197,20 @@ bool BOSS::GetGrazeFlag(int index) {
 
 void BOSS::SetGrazeFlag(int index) {
 	shot[index].gflag = true;
+}
+
+void BOSS::SetShotFlag(int index, bool flag) {
+	shot[index].flag = flag;
+}
+
+void BOSS::GetPosition(double *x, double *y) {
+	*x = this->x;
+	*y = this->y;
+}
+
+int BOSS::HpSet(int i) {
+	this->hp = this->hp - i;
+	return this -> hp;
 }
 
 void BOSS::Shot() {
