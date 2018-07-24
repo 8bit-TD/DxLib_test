@@ -9,7 +9,9 @@ BOSS::BOSS() {
 	prev_x = 200;
 	prev_y = -100;
 	
-	hp = 100;
+	hp = BOSS_HP;
+
+	no_damage = false;
 
 	//画像読み込み
 	gh_face[0] = LoadGraph("boss.png");
@@ -33,7 +35,7 @@ BOSS::BOSS() {
 	raise2 = 2;
 	angle = 0;
 	move_pattern = 0;
-	shot_pattern = 3;
+	shot_pattern = 0;
 
 	movex = 0;
 	movey = 180;
@@ -62,6 +64,9 @@ void BOSS::Move() {
 			break;
 		case 3:
 			MovePattern3();
+			break;
+		case 4:
+			MoveToDefault();
 			break;
 	}
 }
@@ -141,6 +146,21 @@ void BOSS::SetDamageFlag() {
 	this->damageflag = true;
 }
 
+void BOSS::SetDamageSetting() {
+	prev_x = x;
+	prev_y = y;
+	movex = 200 - x;
+	movey = 80 - y;
+	angle = 0;
+	no_damage = true;
+	SetMovePattern(4);
+	SetShotPattern(4);
+}
+
+int BOSS::GetPrevHp() {
+	return prev_hp;
+}
+
 void BOSS::SetFlag(bool f) {
 	this->flag = f;
 }
@@ -208,9 +228,43 @@ void BOSS::GetPosition(double *x, double *y) {
 	*y = this->y;
 }
 
-int BOSS::HpSet(int i) {
-	this->hp = this->hp - i;
-	return this -> hp;
+int BOSS::HpSet(int damage) {
+	prev_hp = hp;
+	hp -= damage;
+	return hp;
+}
+
+bool BOSS::GetNodamageFlag() {
+	return no_damage;
+}
+
+void BOSS::MoveToDefault() {
+	double temp;
+	angle += 2;
+	temp = sin(angle*PI / 180);
+	x = prev_x + temp * movex;
+	y = prev_y + temp * movey;
+	//指定した位置まで移動したら
+	if (angle == 90) {
+		//次の移動＆ショットパターンに変更
+		SetMovePattern(prev_move_pattern + 1);
+		SetShotPattern(prev_shot_pattern + 1);
+		//無敵フラグを戻す
+		no_damage = false;
+		//移動パターンが３なら
+		if (move_pattern = 3)
+			MoveInit(200, 160, 2);
+	}
+}
+
+void BOSS::SetMovePattern(int pattern) {
+	prev_move_pattern = move_pattern;
+	move_pattern = pattern;
+}
+
+void BOSS::SetShotPattern(int pattern) {
+	prev_shot_pattern = shot_pattern;
+	shot_pattern = pattern;
 }
 
 void BOSS::Shot() {
@@ -239,6 +293,7 @@ void BOSS::Shot() {
 						shot[index].gh = gh_shot[1];
 						shot[index].pattern = 0;
 						shot[index].speed = 6;
+						shot[index].type = 0;
 						if (num == 0) {
 							shot[index].rad = trad - (10 * PI / 180);
 						} else if (num == 1) {
@@ -265,6 +320,7 @@ void BOSS::Shot() {
 						shot[index].speed = 4;
 						shot[index].rad = atan2(py - y, px - x) + (rand() % 41 - 20)*PI / 180;
 						shot[index].pattern = 1;
+						shot[index].type = 1;
 						s_shot = true;
 					}
 				}
@@ -277,6 +333,7 @@ void BOSS::Shot() {
 						shot[index].speed = 5;
 						shot[index].rad = trad + num * ((360 / 20)*PI / 180);
 						shot[index].pattern = 2;
+						shot[index].type = 2;
 						++num;
 						if (num == 20) {
 							break;
@@ -291,6 +348,7 @@ void BOSS::Shot() {
 						shot[index].gh = gh_shot[0];
 						shot[index].speed = 3;
 						shot[index].pattern = 3;
+						shot[index].type = 2;
 						shot[index].rad = ((360 / 20)*PI / 180)*num + ((scount / 15)*0.08);
 						++num;
 						if (num == 20) {
@@ -305,6 +363,7 @@ void BOSS::Shot() {
 						shot[index].gh = gh_shot[1];
 						shot[index].speed = 6;
 						shot[index].pattern = 3;
+						shot[index].type = 1;
 						if (num == 0) {
 							shot[index].x = x - 50;
 							shot[index].rad = atan2(py - y, px - (x - 50));
@@ -386,5 +445,7 @@ void BOSS::All() {
 		Shot();
 	}
 	Draw();
+	
+	
 	++count;
 }

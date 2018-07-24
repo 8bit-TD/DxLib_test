@@ -9,8 +9,10 @@ class BOSS {
 	int gh_shot[3];
 	//現在の移動パターン
 	int move_pattern;
+	int prev_move_pattern;
 	//現在のショットパターン
 	int shot_pattern;
+	int prev_shot_pattern;
 	//弾構造体
 	E_SHOT shot[BOSS_SHOTNUM];
 	//合計角度と増加量
@@ -36,6 +38,10 @@ class BOSS {
 
 	int count;
 	int hp;
+	int prev_hp;
+
+	//ダメージを負わないフラグ
+	bool no_damage;
 
 private:
 	void Move();
@@ -46,12 +52,13 @@ private:
 	int ShotSerch();
 	bool ShotOutCheck(int i);
 	void MoveInit(double bx, double by, int state);
-	
+	void MoveToDefault();
 	void Shot();
 	void Draw();
 public:
 	BOSS();
 	void SetDamageFlag();
+	void SetDamageSetting();
 	void SetFlag(bool f);
 	bool GetFlag();
 	void GetPosition(double *x, double *y);
@@ -61,5 +68,10 @@ public:
 	bool GetGrazeFlag(int index);
 	void SetGrazeFlag(int index);
 	int HpSet(int i);
+	int GetPrevHp();
+	bool GetNodamageFlag();
+	void SetMovePattern(int pattern);
+	void SetShotPattern(int pattern);
+	
 	void All();
 };

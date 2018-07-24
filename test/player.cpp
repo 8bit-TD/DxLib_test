@@ -58,8 +58,8 @@ PLAYER::PLAYER()
 }
 
 void PLAYER::GetPosition(double *x, double *y) {
-	*x = this->x-width/2;
-	*y = this->y-height/2;
+	*x = this->x;
+	*y = this->y;
 }
 
 bool PLAYER::GetShotSound() {

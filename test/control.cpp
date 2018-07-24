@@ -312,39 +312,119 @@ void CONTROL::BossCollisionAll() {
 	//ボスの弾の種類
 	int type;
 
-	//プレイヤーのショットとボスの当たり判定
-	for (int i = 0; i < PSHOT_NUM; ++i) {
-		if (player->GetShotPosition(i, &px, &py)) {
-			boss->GetPosition(&bx, &by);
-			//当たり判定
-			if (CircleCollision(PSHOT_COLLISION, BOSS_COLLISION, px, bx, py, by)) {
-				//当たっていればhpを減らす
-				bhp = boss->HpSet(1);
-				//当たった弾のフラグを戻す
-				player->SetShotFlag(i, false);
-				//得点を加える
-				score->SetScore(CURRENT_SCORE, 10);
-				//もしボスのHPが0以下なら
-				if (bhp <= 0) {
-					//フラグを戻す
-					boss->SetFlag(false);
-					//消滅エフェクトを出す
-					EnemyDeadEffect(bx, by);
-					//消滅音を鳴らす
-					edead_flag = true;
-					//さらに得点を加える
-					score->SetScore(CURRENT_SCORE, 10000);
-					//アイテムを出す
-					for (int z = 0; z < ITEM_NUM; ++z) {
-						if (!item[z]->GetFlag()) {
-							//アイテムの初期座標をばらけさせる
-							ix = (rand() % 100 - 51) + bx;
-							iy = (rand() % 100 - 51) + by;
-							item[z]->SetFlag(ix, iy, rand() % 2);
-							++itemnum;
-							//10個出たらループを抜ける
-							if (itemnum == 10) {
-								break;
+	//まず無敵フラグが立ってないかをチェック
+	if (!boss->GetNodamageFlag()) {
+		//プレイヤーのショットとボスの当たり判定
+		for (int i = 0; i < PSHOT_NUM; ++i) {
+			if (player->GetShotPosition(i, &px, &py)) {
+				boss->GetPosition(&bx, &by);
+				//当たり判定
+				if (CircleCollision(PSHOT_COLLISION, BOSS_COLLISION, px, bx, py, by)) {
+					//当たっていればhpを減らす
+					bhp = boss->HpSet(1);
+					//当たった弾のフラグを戻す
+					player->SetShotFlag(i, false);
+					//ボスのダメージ
+					boss->SetDamageFlag();
+					//得点を加える
+					score->SetScore(CURRENT_SCORE, 10);
+
+					char buf[100];
+					sprintf(buf, "%d", bhp);
+					SetMainWindowText(buf);
+
+					//ボスの前回HPが2/3以上で、現HPが2/3以下なら
+					if (BOSS_HP * 2 / 3 >= bhp && boss->GetPrevHp() > BOSS_HP * 2 / 3) {
+						//ダメージエフェクトを出す
+						EnemyDeadEffect(bx, by);
+						//ダメージ音を鳴らす
+						edead_flag = true;
+						//さらに得点を加える
+						score->SetScore(CURRENT_SCORE, 1000);
+						//アイテムを出す
+						for (int z = 0; z < ITEM_NUM; ++z) {
+							if (!item[z]->GetFlag()) {
+								//アイテムの初期座標をばらけさせる
+								ix = (rand() % 100 - 51) + bx;
+								iy = (rand() % 100 - 51) + by;
+								item[z]->SetFlag(ix, iy, rand() % 2);
+								++itemnum;
+								//5個出したらループを抜ける
+								if (itemnum == 5) {
+									break;
+								}
+							}
+							boss->SetDamageSetting();
+						}
+						
+					} else if (BOSS_HP / 3 >= bhp && boss->GetPrevHp() > BOSS_HP / 3) {
+						//ダメージエフェクトを出す
+						EnemyDeadEffect(bx, by);
+						//ダメージ音を鳴らす
+						edead_flag = true;
+						//さらに得点を加える
+						score->SetScore(CURRENT_SCORE, 1000);
+						//アイテムを出す。
+						for (int z = 0; z < ITEM_NUM; ++z) {
+							if (!item[z]->GetFlag()) {
+								//アイテムの初期座標をばらけさせる
+								ix = (rand() % 100 - 51) + bx;
+								iy = (rand() % 100 - 51) + by;
+								item[z]->SetFlag(ix, iy, rand() % 2);
+								++itemnum;
+								//5個出したらループを抜ける
+								if (itemnum == 5) {
+									break;
+								}
+							}
+						}
+						boss->SetDamageSetting();
+					} else if (bhp <= 0) {
+						//フラグを戻す
+						boss->SetFlag(false);
+						//消滅エフェクトを出す
+						EnemyDeadEffect(bx, by);
+						//消滅音を鳴らす
+						edead_flag = true;
+						//さらに得点を加える
+						score->SetScore(CURRENT_SCORE, 10000);
+						//アイテムを出す
+						for (int z = 0; z < ITEM_NUM; ++z) {
+							if (!item[z]->GetFlag()) {
+								ix = (rand() % 100 - 51) + bx;
+								iy = (rand() % 100 - 51) + by;
+								item[z]->SetFlag(ix, iy, rand() % 2);
+								++itemnum;
+								//10個出したらループを抜ける
+								if (itemnum == 10) {
+									break;
+								}
+							}
+						}
+					}
+
+					//もしボスのHPが0以下なら
+					if (bhp <= 0) {
+						//フラグを戻す
+						boss->SetFlag(false);
+						//消滅エフェクトを出す
+						EnemyDeadEffect(bx, by);
+						//消滅音を鳴らす
+						edead_flag = true;
+						//さらに得点を加える
+						score->SetScore(CURRENT_SCORE, 10000);
+						//アイテムを出す
+						for (int z = 0; z < ITEM_NUM; ++z) {
+							if (!item[z]->GetFlag()) {
+								//アイテムの初期座標をばらけさせる
+								ix = (rand() % 100 - 51) + bx;
+								iy = (rand() % 100 - 51) + by;
+								item[z]->SetFlag(ix, iy, rand() % 2);
+								++itemnum;
+								//10個出たらループを抜ける
+								if (itemnum == 10) {
+									break;
+								}
 							}
 						}
 					}
