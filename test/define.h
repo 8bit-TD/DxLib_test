@@ -114,4 +114,3 @@ struct PEFFECT_EXPAND {
 #define BOSS_COLLISION 60
 
 #define BOSS_HP 500
-

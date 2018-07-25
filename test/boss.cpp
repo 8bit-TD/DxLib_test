@@ -35,7 +35,9 @@ BOSS::BOSS() {
 	raise2 = 2;
 	angle = 0;
 	move_pattern = 0;
+	prev_move_pattern = 0;
 	shot_pattern = 0;
+	prev_shot_pattern = 0;
 
 	movex = 0;
 	movey = 180;
@@ -261,10 +263,11 @@ void BOSS::SetMovePattern(int pattern) {
 	prev_move_pattern = move_pattern;
 	move_pattern = pattern;
 }
-
 void BOSS::SetShotPattern(int pattern) {
+
 	prev_shot_pattern = shot_pattern;
 	shot_pattern = pattern;
+
 }
 
 void BOSS::Shot() {
@@ -279,7 +282,7 @@ void BOSS::Shot() {
 
 	double px, py;
 	static double trad;
-	if (!damageflag) {
+	if (flag) {
 		control.GetPlayerPosition(&px, &py);
 		if (scount == 0)
 			trad = atan2(py - y, px - x);
@@ -383,6 +386,9 @@ void BOSS::Shot() {
 					}
 				}
 
+				break;
+			default:
+				//‰½‚à‚µ‚È‚¢
 				break;
 
 		}

@@ -313,7 +313,7 @@ void CONTROL::BossCollisionAll() {
 	int type;
 
 	//まず無敵フラグが立ってないかをチェック
-	if (!boss->GetNodamageFlag()) {
+	if ((!boss->GetNodamageFlag()) && boss->GetFlag()) {
 		//プレイヤーのショットとボスの当たり判定
 		for (int i = 0; i < PSHOT_NUM; ++i) {
 			if (player->GetShotPosition(i, &px, &py)) {
@@ -354,8 +354,9 @@ void CONTROL::BossCollisionAll() {
 									break;
 								}
 							}
-							boss->SetDamageSetting();
+							
 						}
+						boss->SetDamageSetting();
 						
 					} else if (BOSS_HP / 3 >= bhp && boss->GetPrevHp() > BOSS_HP / 3) {
 						//ダメージエフェクトを出す
@@ -501,6 +502,7 @@ void CONTROL::BossCollisionAll() {
 			}
 		}
 	}
+	
 	//アイテムとプレイヤーの当たり判定
 	for (int i = 0; i < ITEM_NUM; ++i) {
 		if (item[i]->GetFlag()) {
@@ -557,8 +559,10 @@ void CONTROL::All()
 		}
 	}
 
-
-	boss->All();
+	if (boss->GetFlag()) {
+		boss->All();
+	}
+	
 	//敵ショットサウンドフラグチェック
 	if (boss->GetShotSound()) {
 		eshot_flag = true;
@@ -628,4 +632,14 @@ CONTROL::~CONTROL()
 		}
 	}
 	delete boss;
+	for (int i = 0; i < EFFECT_EDEADNUM; ++i) {
+		delete effect_edead[i];
+	}
+	for (int i = 0; i < GRAZE_NUM; ++i) {
+		delete graze[i];
+	}
+	for (int i = 0; i < ITEM_NUM; ++i) {
+		delete item[i];
+	}
+
 }
